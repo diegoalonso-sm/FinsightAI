@@ -1,0 +1,49 @@
+---
+config:
+  theme: neo-dark
+  look: classic
+---
+flowchart TD
+ subgraph Ingestion_and_Processing
+        A["News Sources - Websites & APIs"]
+        C["Text Cleaning & Preprocessing"]
+        D["Embedding Generator"]
+        n2["News Scraper Engine"]
+  end
+ subgraph Retrieval_and_Reasoning
+        G["Semantic Search - Vector Retrieval"]
+        F["User CLI Query"]
+        H["Relevant News Snippets"]
+        I["LLM Reasoning Engine"]
+  end
+ subgraph Portfolio_Optimization
+        J["Portfolio Analysis Engine"]
+        K["Reallocation Proposal"]
+        L{"User Confirmation"}
+        M["Update Portfolio"]
+        N["Discard Proposal"]
+        O["Final Report Generator"]
+  end
+    A --> n2
+    C --> D
+    D --> n1["Vector Database"]
+    F --> G
+    G --> H
+    H --> I
+    I --> J
+    J --> K
+    K --> L
+    L -- Yes --> M
+    L -- No --> N
+    M --> O
+    N --> O
+    n1 --> G
+    n2 --> C
+    O --> n4["Stop"]
+    n6["Start"] --> F
+    n7["Start"] --> A
+    n2@{ shape: procs}
+    n1@{ shape: db}
+    n4@{ shape: stop}
+    n6@{ shape: start}
+    n7@{ shape: start}
