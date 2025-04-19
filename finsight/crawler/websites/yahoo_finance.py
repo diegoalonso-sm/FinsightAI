@@ -24,6 +24,11 @@ async def yahoo_finance_crawler():
             config = run_config,
         )
 
+        if not result.success:
+
+            print(f"Crawl failed: {result.error_message}")
+            print(f"Status code: {result.status_code}")
+
         print(result.cleaned_html)
 
 
