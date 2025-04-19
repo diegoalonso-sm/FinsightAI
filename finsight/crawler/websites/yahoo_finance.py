@@ -8,7 +8,7 @@ from crawl4ai.async_configs import CrawlerRunConfig
 async def yahoo_finance_crawler():
 
     browser_config = BrowserConfig(
-        headless=False,
+        headless=True,
     )
 
     run_config = CrawlerRunConfig(
