@@ -34,6 +34,15 @@ async def yahoo_finance_crawler():
 
     browser_config = BrowserConfig(
         headless=True,
+        viewport_width=1920,
+        viewport_height=1080,
+        text_mode=True,
+        light_mode=True,
+    )
+
+    debug_browser = browser_config.clone(
+        headless=False,
+        verbose=True
     )
 
     url_scorer = KeywordRelevanceScorer(
@@ -55,11 +64,12 @@ async def yahoo_finance_crawler():
     )
 
     run_config = CrawlerRunConfig(
+        word_count_threshold=200,
         deep_crawl_strategy=crawling_strategy,
         cache_mode=CacheMode.BYPASS,
         excluded_tags=['form', 'scripts', 'style'],
         keep_data_attributes=False,
-        stream=True
+        stream=True,
         #exclude_external_links=True,
         #remove_overlay_elements=True,
         #pdf=True,
