@@ -13,6 +13,7 @@ async def yahoo_finance_crawler():
 
     run_config = CrawlerRunConfig(
         cache_mode=CacheMode.BYPASS,
+        excluded_tags=['form', 'header', 'footer'],
         exclude_external_links=False,
         remove_overlay_elements=False,
     )
