@@ -6,6 +6,7 @@ from crawl4ai.async_configs import CrawlerRunConfig
 # from crawl4ai.content_scraping_strategy import LXMLWebScrapingStrategy
 from crawl4ai.deep_crawling import BestFirstCrawlingStrategy
 from crawl4ai.deep_crawling.scorers import KeywordRelevanceScorer
+import time
 
 from crawl4ai.deep_crawling.filters import (
     FilterChain,
@@ -16,50 +17,76 @@ from crawl4ai.deep_crawling.filters import (
 # TODO: Considerar utilizar estrategias de streaming para paralelizar el scraping.
 # TODO: Revisar por qué no se están imprimiendo correctamente los scores.
 # TODO: Probar filtros del tipo SEOFilter y ContentRelevanceFilter.
+# TODO: En caso de fallar el crawler para un URL, lanzar una excepción.
 
-keywords = {
-    "EquityTech Fund": "Technology",
-    "GreenEnergy ETF": "Renewable energy",
-    "HealthBio Stocks": "Biotechnology",
-    "Global Bonds Fund": "Government bonds",
-    "CryptoIndex": "Cryptocurrencies",
-    "RealEstate REIT": "Real estate investment",
-    "Emerging Markets Fund": "Emerging markets",
-    "AI & Robotics ETF": "Artificial intelligence",
-    "Commodities Basket": "Commodities",
-    "Cash Reserve": "Liquidity"
-}
+
+async def simple_scroll_time(url, duration_seconds=15):
+
+    session_id = "scroll_session"
+
+    browser_config = BrowserConfig(
+        headless=False,
+    )
+
+    async with AsyncWebCrawler(config=browser_config) as crawler:
+
+        config_initial = CrawlerRunConfig(
+            wait_for="css:body",
+            session_id=session_id,
+            cache_mode=CacheMode.BYPASS,
+        )
+
+        result = await crawler.arun(url=url, config=config_initial)
+
+        print(f"🌐 Página cargada. Scrolleando durante {duration_seconds} segundos...")
+
+        start_time = time.time()
+
+        scroll_count = 0
+
+        while (time.time() - start_time) < duration_seconds:
+            scroll_js = "window.scrollTo(0, document.body.scrollHeight);"
+
+            config_scroll = CrawlerRunConfig(
+                session_id=session_id,
+                js_code=scroll_js,
+                js_only=True,
+                cache_mode=CacheMode.BYPASS,
+            )
+
+            await crawler.arun(url=url, config=config_scroll)
+            scroll_count += 1
+            print(f"🖱️ Scroll número {scroll_count} hecho.")
+
+            await asyncio.sleep(1)  # Esperar 1 segundo entre scrolls (puedes ajustar si quieres más rápido o lento)
+
+        print(f"🎯 Scrolling finalizado tras {scroll_count} scrolls en {duration_seconds} segundos.")
+
+        print(result.links)
+
+
 
 async def yahoo_finance_crawler():
 
     browser_config = BrowserConfig(
-        headless=True,
-        viewport_width=1920,
-        viewport_height=1080,
+        headless=False,
         text_mode=True,
         light_mode=True,
     )
 
-    debug_browser = browser_config.clone(
-        headless=False,
-        verbose=True
-    )
-
-    url_scorer = KeywordRelevanceScorer(
-        keywords=[keyword.lower() for keyword in keywords.values()],
-        weight=0.7  # Minimum similarity score (0.0 to 1.0)
-    )
-
     filter_chain = FilterChain([
         URLPatternFilter(patterns=["*/news/*"]),
-        DomainFilter(allowed_domains=["finance.yahoo.com"]),
+        DomainFilter(
+            allowed_domains=[
+                "finance.yahoo.com"
+            ],
+        ),
     ])
 
     crawling_strategy = BestFirstCrawlingStrategy(
-        max_depth=3,
+        max_depth=1,
         include_external=False,
-        url_scorer=url_scorer,
-        max_pages=100,
+        # max_pages=100,
         filter_chain=filter_chain,
     )
 
@@ -102,4 +129,6 @@ async def yahoo_finance_crawler():
 
 
 if __name__ == "__main__":
-    asyncio.run(yahoo_finance_crawler())
+
+    # asyncio.run(yahoo_finance_crawler())
+    asyncio.run(simple_scroll_time("https://finance.yahoo.com/news", duration_seconds=5))
