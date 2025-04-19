@@ -13,6 +13,8 @@ async def yahoo_finance_crawler():
 
     run_config = CrawlerRunConfig(
         cache_mode=CacheMode.BYPASS,
+        exclude_external_links=False,
+        remove_overlay_elements=False,
     )
 
     async with AsyncWebCrawler(config=browser_config) as crawler:
