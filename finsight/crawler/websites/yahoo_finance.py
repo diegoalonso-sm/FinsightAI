@@ -11,11 +11,11 @@ from crawl4ai.deep_crawling.filters import (
     FilterChain,
     URLPatternFilter,
     DomainFilter,
-    ContentTypeFilter
 )
 
 # TODO: Considerar utilizar estrategias de streaming para paralelizar el scraping.
 # TODO: Revisar por qué no se están imprimiendo correctamente los scores.
+# TODO: Probar filtros del tipo SEOFilter y ContentRelevanceFilter.
 
 keywords = {
     "EquityTech Fund": "Technology",
@@ -38,7 +38,7 @@ async def yahoo_finance_crawler():
 
     url_scorer = KeywordRelevanceScorer(
         keywords=[keyword.lower() for keyword in keywords.values()],
-        weight=0.7
+        weight=0.7  # Minimum similarity score (0.0 to 1.0)
     )
 
     filter_chain = FilterChain([
@@ -47,10 +47,10 @@ async def yahoo_finance_crawler():
     ])
 
     crawling_strategy = BestFirstCrawlingStrategy(
-        max_depth=5,
+        max_depth=3,
         include_external=False,
         url_scorer=url_scorer,
-        max_pages=10,
+        max_pages=100,
         filter_chain=filter_chain,
     )
 
@@ -67,11 +67,14 @@ async def yahoo_finance_crawler():
 
     async with AsyncWebCrawler(config=browser_config) as crawler:
 
+        results = []
+
         async for result in await crawler.arun(
             url="https://finance.yahoo.com/news",
             config = run_config,
         ):
 
+            results.append(result)
             score = result.metadata.get("score", 0)
             print(f"Score: {score:.2f} | {result.url}")
 
@@ -84,6 +87,8 @@ async def yahoo_finance_crawler():
                     f.write(result.pdf)
 
         # print(result.cleaned_html)
+
+        print(f"Crawled {len(results)} high-value pages")
 
 
 if __name__ == "__main__":
