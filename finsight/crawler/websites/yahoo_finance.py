@@ -17,6 +17,7 @@ async def yahoo_finance_crawler():
         keep_data_attributes=False,
         #exclude_external_links=True,
         #remove_overlay_elements=True,
+        #pdf=True,
     )
 
     async with AsyncWebCrawler(config=browser_config) as crawler:
@@ -27,11 +28,12 @@ async def yahoo_finance_crawler():
         )
 
         if not result.success:
-
             print(f"Crawl failed: {result.error_message}")
             print(f"Status code: {result.status_code}")
 
-        print(result.cleaned_html)
+        if result.pdf:
+            with open("wikipedia_page.pdf", "wb") as f:
+                f.write(result.pdf)
 
 
 if __name__ == "__main__":
