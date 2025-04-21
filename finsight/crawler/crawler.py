@@ -1,27 +1,24 @@
 import asyncio
 import json
 from abc import abstractmethod
+from enum import Enum
 from pathlib import Path
 from typing import List
 
-from crawl4ai import (
-    BrowserConfig,
-    CrawlerRunConfig,
-    CacheMode,
-    JsonCssExtractionStrategy,
-    LLMConfig,
-    AsyncWebCrawler,
-)
+from crawl4ai import BrowserConfig, CrawlerRunConfig, CacheMode, JsonCssExtractionStrategy, LLMConfig, AsyncWebCrawler
 
-from finsight.crawler.core.content_extractor import StructuredExtractor
-from finsight.crawler.core.url_extractor import URLExtractorCrawler, ScrollExplorationStrategy
-from finsight.crawler.sanitizer.datetime import DatetimeSanitizer, DateFormatSanitizer
-from finsight.crawler.sanitizer.urls import (
-    URLSanitizerChain,
-    PrefixSanitizer,
-    RemoveQueryParametersSanitizer,
-    RemoveNoneSanitizer,
-)
+from finsight.crawler.core.content.base import StructuredExtractor
+from finsight.crawler.core.url.base import URLExtractorCrawler
+from finsight.crawler.core.url.deep_search import DeepSearchStrategy
+from finsight.crawler.core.url.scroll_search import ScrollSearchStrategy
+from finsight.crawler.sanitizer.datetime import DatetimeSanitizer, DateFormatSanitizer, ShortMonthDateSanitizer
+from finsight.crawler.sanitizer.urls import URLSanitizerChain, PrefixSanitizer, RemoveQueryParametersSanitizer, RemoveNoneSanitizer
+
+
+class ExtractionMode(str, Enum):
+
+    SCROLL = "scroll"
+    DEEP = "deep"
 
 
 class NewsExtractor:
@@ -34,24 +31,18 @@ class NewsExtractor:
 
     """
 
-    def __init__(self, duration_seconds: int, scroll_interval: int, headless: bool = True) -> None:
+    def __init__(self, strategy, headless: bool = True, **kwargs) -> None:
 
         """
         Initializes the base extractor with scroll behavior and browser configuration.
-
-        :param duration_seconds: Total duration in seconds to perform scrolling during URL exploration.
-        :type duration_seconds: int
-
-        :param scroll_interval: Interval in seconds between scroll actions.
-        :type scroll_interval: int
 
         :param headless: Whether to run the browser in headless mode.
         :type headless: bool
 
         """
 
-        self.duration_seconds = duration_seconds
-        self.scroll_interval = scroll_interval
+        self.strategy = strategy
+        self.kwargs = kwargs
         self.headless = headless
 
     async def extract_urls(self, crawler, url: str, prefix: str) -> List[str]:
@@ -73,20 +64,38 @@ class NewsExtractor:
 
         """
 
-        url_extractor = URLExtractorCrawler(
-            strategy=ScrollExplorationStrategy(
-                duration_seconds=self.duration_seconds,
-                scroll_interval=self.scroll_interval,
-            ),
-            crawler=crawler,
-            run_config=CrawlerRunConfig(
-                wait_for="css:body",
-                cache_mode=CacheMode.BYPASS,
-                session_id="scroller",
-                exclude_external_links=True,
-                exclude_social_media_links=True,
+        if self.strategy == ExtractionMode.SCROLL:
+
+            url_extractor = URLExtractorCrawler(
+                strategy=ScrollSearchStrategy(
+                    duration_seconds=self.kwargs.get("duration_seconds", 10),
+                    scroll_interval=self.kwargs.get("scroll_interval", 1.0),
+                ),
+                crawler=crawler,
+                run_config=CrawlerRunConfig(
+                    wait_for="css:body",
+                    cache_mode=CacheMode.BYPASS,
+                    session_id="scroller",
+                    exclude_external_links=True,
+                    exclude_social_media_links=True,
+                )
             )
-        )
+
+        else: # self.strategy == ExtractionMode.DEEP:
+
+            url_extractor = URLExtractorCrawler(
+                crawler=crawler,
+                strategy=DeepSearchStrategy(
+                    allowed_domains=self.kwargs.get("allowed_domains", []),
+                    url_patterns=self.kwargs.get("url_patterns", []),
+                    max_depth=self.kwargs.get("max_depth", 2),
+                    max_pages=self.kwargs.get("max_pages", 100),
+                ),
+                run_config=CrawlerRunConfig(
+                    wait_for="css:body",
+                    cache_mode=CacheMode.BYPASS,
+                )
+            )
 
         sanitizer = URLSanitizerChain([
             RemoveQueryParametersSanitizer(),
@@ -217,7 +226,7 @@ class YahooFinanceNewsExtractor(NewsExtractor):
 
         """
 
-        super().__init__(duration_seconds, scroll_interval)
+        super().__init__(strategy=ExtractionMode.SCROLL, duration_seconds=duration_seconds, scroll_interval=scroll_interval)
         self.start_url = "https://finance.yahoo.com"
         self.prefix = "https://finance.yahoo.com/news"
         self.model = "openai/gpt-4o-mini"
@@ -247,7 +256,7 @@ class YahooFinanceNewsExtractor(NewsExtractor):
 
             extracted_news = await self.extract_content(
                 crawler=crawler,
-                urls=urls[0:2],
+                urls=urls,
                 model=self.model,
                 sample_html=self.sample_html,
                 llm_query=self.llm_query,
@@ -258,6 +267,7 @@ class YahooFinanceNewsExtractor(NewsExtractor):
 
                 sanitizer = DatetimeSanitizer([
                     DateFormatSanitizer(),
+                    ShortMonthDateSanitizer(),
                 ])
 
                 new["date"] = str(sanitizer.sanitize(new["date"]))
