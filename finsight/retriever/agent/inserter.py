@@ -31,14 +31,13 @@ class Inserter:
         self.client = client
         self.collection = self.client.collections.get(collection_name)
 
-    def insert_documents(self, documents: List[Dict], uuid_properties: List[str], max_errors: int = 10) -> None:
+    def insert_documents(self, documents: List[Dict], uuid_properties: List[str]) -> None:
 
         """
         Insert a list of documents into the collection with dynamic batching.
 
         :param documents: List of document dictionaries to insert.
         :param uuid_properties: List of property keys used to generate UUIDs.
-        :param max_errors: Maximum allowed errors before stopping.
 
         """
 
@@ -49,10 +48,33 @@ class Inserter:
                 self._validate_document_type(document)
                 obj_uuid = self._generate_uuid(document, uuid_properties)
 
+                if self._object_exists(obj_uuid):
+                    print(f"[SKIP] Object with UUID {obj_uuid} already exists.")
+                    continue
+
                 batch.add_object(
                     properties=document,
                     uuid=obj_uuid,
                 )
+
+                print(f"Adding object with UUID: {obj_uuid}")
+
+    def _object_exists(self, obj_uuid: str) -> bool:
+
+        """
+        Check if an object with the given UUID already exists in the collection.
+
+        :param obj_uuid: UUID to check.
+        :return: True if object exists, False otherwise.
+
+        """
+
+        try:
+            obj = self.collection.query.fetch_object_by_id(obj_uuid)
+            return obj is not None
+
+        except Exception:
+            return False
 
     @staticmethod
     def _validate_document_type(document: Dict) -> None:
