@@ -67,7 +67,7 @@ class StructuredExtractor:
 
             if result.success:
                 data = json.loads(result.extracted_content)
-                structured_data.append(data)
+                structured_data += data
 
         return structured_data
 
