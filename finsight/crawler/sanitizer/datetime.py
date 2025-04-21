@@ -26,8 +26,27 @@ class DateFormatSanitizer(SanitizerStrategy):
 
         """
 
-        value = re.sub(r"GMT([+-])(\d)(?!\d)", r"GMT\g<1>0\g<2>00", value)
-        parsed_date = datetime.strptime(value, "%a, %B %d, %Y at %I:%M %p GMT%z")
+        value = re.sub(r"\sGMT[+-]?\d{1,4}", "", value)
+        parsed_date = datetime.strptime(value.strip(), "%a, %B %d, %Y at %I:%M %p")
+
+        return parsed_date
+
+class ShortMonthDateSanitizer(SanitizerStrategy):
+
+    """Sanitizer strategy for date strings like 'Sun, Apr 20, 2025, 11:24 AM'."""
+
+    def sanitize(self, value: str) -> datetime:
+
+        """
+        Sanitize the input value and return a datetime object.
+
+        :param value: The value to sanitize.
+        :return: A datetime object.
+
+        """
+
+        value = re.sub(r"\sGMT[+-]?\d{1,4}", "", value)
+        parsed_date = datetime.strptime(value.strip(), "%a, %b %d, %Y, %I:%M %p")
 
         return parsed_date
 
