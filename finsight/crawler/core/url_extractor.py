@@ -5,7 +5,7 @@ from typing import List, Optional
 
 from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig, CacheMode
 
-from finsight.crawler.core.sanitizer.urls import (
+from finsight.crawler.sanitizer.urls import (
     URLSanitizerChain,
     PrefixSanitizer,
     RemoveQueryParametersSanitizer,
