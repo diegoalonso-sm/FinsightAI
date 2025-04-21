@@ -225,18 +225,18 @@ class YahooFinanceNewsExtractor(NewsExtractor):
         llm_query = """
 
             From https://finance.yahoo.com/news/, I have shared a sample of one news div.
-
+    
             Please generate a JSON schema based only on the following properties:
+            
             - title
             - date
-            - article
-
-            The `date` must be formatted as `YYYY-MM-DD HH:MM:SS`, a format that can be interpreted directly using `datetime` libraries.
-
+            - full-article
+    
             Only extract information related to the news article itself.  
             Do not include extra metadata, site-wide elements, or unrelated links.  
             Ensure the generated schema is clean, minimal, and strictly follows the required properties.
-
+            Make sure to include the whole article text, not just part of it.
+    
         """
 
         return llm_query
