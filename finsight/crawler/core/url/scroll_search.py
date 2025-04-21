@@ -12,8 +12,7 @@ from finsight.crawler.sanitizer.urls import (
     RemoveNoneSanitizer,
 )
 
-
-class ScrollExplorationStrategy(ExplorationStrategy):
+class ScrollSearchStrategy(ExplorationStrategy):
 
     """Exploration strategy that scrolls the page and extracts internal links over time."""
 
@@ -193,7 +192,7 @@ async def usage_example() -> None:
 
         url_extractor = URLExtractorCrawler(
             crawler=crawler,
-            strategy=ScrollExplorationStrategy(
+            strategy=ScrollSearchStrategy(
                 duration_seconds=2,
                 scroll_interval=1.0,
             ),
