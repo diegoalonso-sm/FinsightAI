@@ -73,6 +73,7 @@ class StructuredExtractor:
                 json_data = json_data.pop()
                 json_data["url"] = result.url
                 structured_data += [json_data]
+                print(f"[INFO] Extracted data from {result.url}")
 
         return structured_data
 
