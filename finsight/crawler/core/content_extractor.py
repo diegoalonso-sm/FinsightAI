@@ -66,8 +66,10 @@ class StructuredExtractor:
             )
 
             if result.success:
-                data = json.loads(result.extracted_content)
-                structured_data += data
+                content = result.extracted_content
+                json_data = json.loads(content)
+                json_data[0]["url"] = result.url
+                structured_data += json_data
 
         return structured_data
 
