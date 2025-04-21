@@ -16,7 +16,8 @@ The module is organized into several components, each responsible for a specific
 | `crawler.py`                | Main `NewsExtractor` class that coordinates URL exploration and structured content extraction. |
 | `core/url_extractor.py`     | Defines exploration strategies like scrolling and internal link extraction.                    |
 | `core/content_extractor.py` | Extracts structured content (JSON) from URLs using CSS or LLM-based strategies.                |
-| `core/sanitizer/urls.py`    | Chains multiple URL sanitization filters to validate and normalize extracted links.            |
+| `sanitizer/urls.py`         | Chains multiple URL sanitization filters to validate and normalize extracted links.            |  
+| `sanitizer/datetime.py`     | Cleans and formats datetime strings from extracted content.                                    |
 | `__init__.py`               | Package initializer to allow running the module as a Python package.                           |
 
 ## **Requirements**
@@ -38,7 +39,13 @@ Each script contains a `usage_example()` that can be executed directly using:
 - Demonstrates how to clean and filter a set of raw URLs.
     
     ```bash
-    uv run python -m finsight.crawler.core.sanitizer.urls
+    uv run python -m finsight.crawler.sanitizer.urls
+    ```
+  
+- Demonstrates how to clean and format a datetime string.
+    
+    ```bash
+    uv run python -m finsight.crawler.sanitizer.datetime
     ```
 
 - Extracts structured information (title, date, full article) from a sample list of URLs.
