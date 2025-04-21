@@ -24,6 +24,7 @@ services:
     restart: on-failure:0
     environment:
       QUERY_DEFAULTS_LIMIT: 25
+      OPENAI_APIKEY: ${OPENAI_API_KEY}
       AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: 'true'
       PERSISTENCE_DATA_PATH: '/var/lib/weaviate'
       ENABLE_API_BASED_MODULES: 'true'
