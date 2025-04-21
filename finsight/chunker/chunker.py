@@ -62,12 +62,16 @@ class TextChunker:
             chunks = self.chunk_text(doc[field])
 
             for i, chunk in enumerate(chunks):
+
                 chunk = self.clean_text(chunk)
                 chunked_documents.append({
                     **doc,
                     "chunk_index": i,
                     "chunk": chunk,
                 })
+
+                print(f"Chunk {i} for document '{doc.get('title', 'N/A')}' created.")
+                print(f"Chunk content: {chunk[0:50]}...")  # Print first 100 characters for brevity
 
         return chunked_documents
 
