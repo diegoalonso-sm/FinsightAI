@@ -1,0 +1,21 @@
+{
+  "name": "News Article",
+  "baseSelector": ".article-wrap",
+  "fields": [
+    {
+      "name": "title",
+      "selector": ".cover-title",
+      "type": "text"
+    },
+    {
+      "name": "date",
+      "selector": ".byline-attr-time-style time",
+      "type": "text"
+    },
+    {
+      "name": "full_article",
+      "selector": ".body-wrap .atoms-wrapper",
+      "type": "text"
+    }
+  ]
+}
