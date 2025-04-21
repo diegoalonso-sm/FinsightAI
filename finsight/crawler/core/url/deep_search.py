@@ -9,8 +9,7 @@ from crawl4ai.deep_crawling.filters import FilterChain, URLPatternFilter, Domain
 
 from finsight.crawler.core.url.base import ExplorationStrategy, URLExtractorCrawler
 
-
-class BestFirstKeywordExplorationStrategy(ExplorationStrategy):
+class DeepSearchStrategy(ExplorationStrategy):
 
     """
     Exploration strategy that performs a deep crawl prioritizing pages based on keyword relevance.
@@ -118,7 +117,7 @@ async def usage_example() -> None:
 
         url_extractor = URLExtractorCrawler(
             crawler=crawler,
-            strategy=BestFirstKeywordExplorationStrategy(
+            strategy=DeepSearchStrategy(
                 allowed_domains=["finance.yahoo.com"],
                 url_patterns=["*/news/*"],
                 max_depth=2,
