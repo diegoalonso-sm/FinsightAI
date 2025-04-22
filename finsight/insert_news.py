@@ -1,4 +1,5 @@
 import asyncio
+import json
 from typing import List, Dict
 
 import typer
@@ -70,6 +71,72 @@ def insert_news_command(
     insert_chunks_into_weaviate(articles, collection_name)
     typer.echo("[INFO] Insertion complete.")
 
+
+@app.command("show_news")
+def show_news_command(
+    collection_name: str = typer.Option("NewsChunksExample", help="Weaviate collection name to fetch news chunks."),
+    max_characters: int = typer.Option(100, help="Maximum characters to display for each article."),
+    max_articles: int = typer.Option(10, help="Maximum number of articles to display."),
+):
+
+    """Fetch and display news articles from a Weaviate collection."""
+
+    with WeaviateClientFactory.connect_to_local() as client:
+
+        collection = client.collections.get(collection_name)
+        response = collection.query.fetch_objects(
+            limit=max_articles,
+            include_vector=True,
+        )
+
+        for obj in response.objects:
+
+            print("-" * max_characters)
+            print(f"UUID: {obj.uuid}")
+
+            for key, value in obj.properties.items():
+                value_str = str(value)
+                truncated_value = value_str[:max_characters] + ("..." if len(value_str) > max_characters else "")
+                print(f"{key}: {truncated_value}")
+
+            print(f"Vector: {str(obj.vector)[:max_characters]}...")
+
+        print("-" * max_characters)
+
+
+@app.command("create_schema")
+def create_schema_command(
+    collection_name: str = typer.Option("NewsChunksExample", help="Weaviate collection name to create."),
+):
+
+    """Create a Weaviate collection with specified properties."""
+
+    with WeaviateClientFactory.connect_to_local() as client:
+
+        properties = [
+            wvc.config.Property(name="title", data_type=wvc.config.DataType.TEXT),
+            wvc.config.Property(name="full_article", data_type=wvc.config.DataType.TEXT),
+            wvc.config.Property(name="url", data_type=wvc.config.DataType.TEXT, skip_vectorization=True),
+            wvc.config.Property(name="date", data_type=wvc.config.DataType.TEXT),
+        ]
+
+        schema_manager = SchemaManager(client)
+        schema_manager.create_collection(collection_name, properties)
+        print(f"[INFO] Collection '{collection_name}' created.")
+
+
+@app.command("delete_schema")
+def hard_delete_command(
+    collection_name: str = typer.Option("NewsChunksExample", help="Weaviate collection name to delete."),
+):
+
+    """Delete a Weaviate collection."""
+
+    with WeaviateClientFactory.connect_to_local() as client:
+
+        schema_manager = SchemaManager(client)
+        schema_manager.delete_collection(collection_name)
+        print(f"[INFO] Collection '{collection_name}' deleted.")
 
 if __name__ == "__main__":
     app()
