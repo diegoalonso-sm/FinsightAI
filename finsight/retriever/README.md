@@ -2,61 +2,85 @@
 
 ## **Overview**
 
-This module provides the tools needed to **interact, manage, and populate a Weaviate vector database** for financial news storage and retrieval.  
-It allows creating collections, inserting documents or news chunks, and managing local or cloud connections to Weaviate easily and efficiently.
+The Retriever module provides a complete toolkit to **manage, populate, and query a Weaviate vector database** focused on **financial news storage and semantic retrieval**.  
+It enables the dynamic creation of collections, efficient document insertion, and powerful semantic search over indexed financial data.
 
-It is ideal for projects requiring embedding financial data, semantic search, or retrieval augmented generation (RAG) over news datasets.
+This module is ideal for projects requiring **embeddings, semantic search**, or **retrieval-augmented generation (RAG)** based on financial datasets.
 
 ## **Structure**
 
-The module is organized into several components, each responsible for a specific part of the storage and retrieval workflow:
+The module is organized into several subcomponents, each responsible for a key part of the retrieval workflow:
 
-| File                   | Description                                                                             |
-|:-----------------------|:----------------------------------------------------------------------------------------|
-| `agent/inserter.py`    | Inserter agent that batches and inserts documents or chunks into a Weaviate collection. |
-| `client/connection.py` | Handles local or cloud connections to a Weaviate instance using a context manager.      |
-| `client/interface.py`  | Schema manager for creating, deleting, and listing Weaviate collections dynamically.    |
+| File                   | Description                                                                                    |
+|:-----------------------|:-----------------------------------------------------------------------------------------------|
+| `agent/inserter.py`    | Inserter agent for batching and inserting documents or news chunks into a Weaviate collection. |
+| `agent/searcher.py`    | Searcher agent for performing semantic searches over a Weaviate collection.                    |
+| `client/connection.py` | Factory to handle local or cloud Weaviate connections using context managers.                  |
+| `client/interface.py`  | Schema manager for dynamically creating, deleting, and listing Weaviate collections.           |
 
 ## **Requirements**
 
-This module primarily depends on:
+The module primarily relies on the following packages:
 
-- [`weaviate-client`](https://weaviate.io/developers/weaviate/client-libraries/python) – Official Python client to interact with Weaviate instances.
-- [`uuid`](https://docs.python.org/3/library/uuid.html) – To generate consistent UUIDs for document identification.
-- [`os`](https://docs.python.org/3/library/os.html) – For handling environment variables during cloud connections.
+- [`weaviate-client`](https://weaviate.io/developers/weaviate/client-libraries/python) – Official Python client to interact with Weaviate.
+- [`uuid`](https://docs.python.org/3/library/uuid.html) – To generate consistent UUIDs based on document fields.
+- [`os`](https://docs.python.org/3/library/os.html) – To handle environment variables for cloud connectivity.
 
-> Make sure `weaviate-client` and other dependencies are installed and properly configured.
+> Ensure `weaviate-client` is installed and properly configured before usage.
 
-## **Execution Examples**
+## **Usage Examples**
 
-Each script contains a `usage_example()` that can be executed directly using:
+Each script includes a `usage_example()` function that can be executed directly to demonstrate typical workflows.
 
-- Demonstrates how to create a connection to a local Weaviate instance.
+### **Connecting to Weaviate (Local or Cloud)**
 
-    ```bash
-    uv run python -m finsight.retriever.client.connection
-    ```
+```bash
+uv run python -m finsight.retriever.client.connection
+```
 
-- Demonstrates how to create and delete a collection with a defined schema.
+Establishes a connection to a locally running or cloud-hosted Weaviate instance.
 
-    ```bash
-    uv run python -m finsight.retriever.client.interface
-    ```
+---
 
-- Demonstrates how to insert a batch of documents or news chunks into a Weaviate collection.
+### **Managing Collections**
 
-    ```bash
-    uv run python -m finsight.retriever.agent.inserter
-    ```
+```bash
+uv run python -m finsight.retriever.client.interface
+```
 
-Each module includes a self-contained example demonstrating its usage with realistic parameters.  
-These examples show how to properly instantiate the components, configure expected inputs, and execute the functionality.
-They are designed to serve as both quick tests and practical templates for real-world use cases.
+Demonstrates how to create, list, and delete collections with defined schemas dynamically.
 
-> **Note**  
->
-> The current classes are designed to follow the official Weaviate documentation examples, and aim for a minimal
-> working setup. In future iterations, the system is planned to be optimized by introducing additional functionality
-> for **monitoring** and **visualizing** the database state through a more **user-friendly interface**.  
->
-> See the official guide for more details: [Weaviate Quickstart - Local Setup](https://weaviate.io/developers/weaviate/quickstart/local)
+---
+
+### **Inserting Documents or News Chunks**
+
+```bash
+uv run python -m finsight.retriever.agent.inserter
+```
+
+Shows how to batch-insert documents into a collection with UUID generation based on selected fields.
+
+---
+
+### **Performing Semantic Search Queries**
+
+```bash
+uv run python -m finsight.retriever.agent.searcher
+```
+
+Executes a semantic search over documents using hybrid vector search strategies.
+
+---
+
+Each module includes self-contained examples demonstrating:
+
+- How to instantiate the respective components,
+- How to configure input parameters,
+- How to execute the intended functionality.
+
+These examples serve as **both functional tests** and **templates** for real-world integration.
+
+## **Notes and Future Improvements**
+
+- Current classes follow a minimal and practical setup aligned with the [official Weaviate examples](https://weaviate.io/developers/weaviate/quickstart/local).
+- Future iterations are planned to include **error monitoring**, **insertion analytics**, and a **web-based interface** for improved visibility into the Weaviate database state.
