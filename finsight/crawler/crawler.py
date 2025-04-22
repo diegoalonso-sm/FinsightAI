@@ -213,7 +213,7 @@ class YahooFinanceNewsExtractor(NewsExtractor):
 
     """Concrete implementation of NewsExtractor for scraping financial articles from Yahoo Finance."""
 
-    def __init__(self, duration_seconds: int, scroll_interval: int):
+    def __init__(self, duration_seconds: int, scroll_interval: int, max_articles: int = 50) -> None:
 
         """
         Initializes the extractor with Yahoo Finance-specific configuration.
@@ -224,12 +224,16 @@ class YahooFinanceNewsExtractor(NewsExtractor):
         :param scroll_interval: Time in seconds between each scroll action.
         :type scroll_interval: int
 
+        :param max_articles: Maximum number of articles to extract.
+        :type max_articles: int
+
         """
 
         super().__init__(strategy=ExtractionMode.SCROLL, duration_seconds=duration_seconds, scroll_interval=scroll_interval)
         self.start_url = "https://finance.yahoo.com"
         self.prefix = "https://finance.yahoo.com/news"
         self.model = "openai/gpt-4o-mini"
+        self.max_articles = max_articles
         self.sample_html = self._get_html_sample()
         self.llm_query = self._get_llm_query()
 
@@ -256,7 +260,7 @@ class YahooFinanceNewsExtractor(NewsExtractor):
 
             extracted_news = await self.extract_content(
                 crawler=crawler,
-                urls=urls,
+                urls=urls[:self.max_articles],
                 model=self.model,
                 sample_html=self.sample_html,
                 llm_query=self.llm_query,
@@ -270,7 +274,12 @@ class YahooFinanceNewsExtractor(NewsExtractor):
                     ShortMonthDateSanitizer(),
                 ])
 
-                new["date"] = str(sanitizer.sanitize(new["date"]))
+                try:
+                    new["date"] = str(sanitizer.sanitize(new["date"]))
+
+                except Exception as e:
+                    print(f"Skipping news due to date error: {e}")
+                    continue
 
             return extracted_news
 
@@ -348,6 +357,7 @@ async def usage_example() -> None:
     extractor = YahooFinanceNewsExtractor(
         duration_seconds=2,
         scroll_interval=1,
+        max_articles=5,
     )
 
     results = await extractor.run()
