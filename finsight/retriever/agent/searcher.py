@@ -39,10 +39,11 @@ class Searcher:
 
         """
 
-        response = self.collection.query.near_text(
+        response = self.collection.query.hybrid(
             query=query,
+            alpha=0.75,
             limit=limit,
-            return_metadata=wvc.query.MetadataQuery(distance=True),
+            return_metadata=wvc.query.MetadataQuery(distance=True)
         )
 
         results = []
@@ -67,7 +68,7 @@ def usage_example():
     with WeaviateClientFactory.connect_to_local() as client:
 
         searcher = Searcher(client=client, collection_name="News")
-        results = searcher.search_documents("What is AMD?", limit=2)
+        results = searcher.search_documents("Most relevant tech news", limit=5)
 
         for r in results:
             print(r)
