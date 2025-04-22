@@ -274,7 +274,12 @@ class YahooFinanceNewsExtractor(NewsExtractor):
                     ShortMonthDateSanitizer(),
                 ])
 
-                new["date"] = str(sanitizer.sanitize(new["date"]))
+                try:
+                    new["date"] = str(sanitizer.sanitize(new["date"]))
+
+                except Exception as e:
+                    print(f"Skipping news due to date error: {e}")
+                    continue
 
             return extracted_news
 
