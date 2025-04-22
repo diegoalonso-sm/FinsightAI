@@ -1,14 +1,12 @@
 import asyncio
-import json
 from typing import List, Dict
 
 import typer
 import weaviate.classes as wvc
 
-from finsight.chunker.chunker import TextChunker
-from finsight.chunker.strategies.recursive import RecursiveSplitter
 from finsight.crawler.crawler import YahooFinanceNewsExtractor
 from finsight.retriever.agent.inserter import Inserter
+from finsight.retriever.agent.searcher import Searcher
 from finsight.retriever.client.connection import WeaviateClientFactory
 from finsight.retriever.client.interface import SchemaManager
 
@@ -106,7 +104,7 @@ def show_news_command(
 
 @app.command("create_schema")
 def create_schema_command(
-    collection_name: str = typer.Option("NewsChunksExample", help="Weaviate collection name to create."),
+    collection_name: str = typer.Option("Example", help="Weaviate collection name to create."),
 ):
 
     """Create a Weaviate collection with specified properties."""
@@ -127,7 +125,7 @@ def create_schema_command(
 
 @app.command("delete_schema")
 def hard_delete_command(
-    collection_name: str = typer.Option("NewsChunksExample", help="Weaviate collection name to delete."),
+    collection_name: str = typer.Option("Example", help="Weaviate collection name to delete."),
 ):
 
     """Delete a Weaviate collection."""
@@ -137,6 +135,25 @@ def hard_delete_command(
         schema_manager = SchemaManager(client)
         schema_manager.delete_collection(collection_name)
         print(f"[INFO] Collection '{collection_name}' deleted.")
+
+
+@app.command("search_schema")
+def search_schema_command(
+    collection_name: str = typer.Option("Example", help="Weaviate collection name to search."),
+    query: str = typer.Option("Tesla", help="Search query."),
+    max_documents: int = typer.Option(5, help="Maximum number of documents to retrieve."),
+):
+
+    """Search for documents in a Weaviate collection."""
+
+    with WeaviateClientFactory.connect_to_local() as client:
+
+        searcher = Searcher(client=client, collection_name=collection_name)
+        results = searcher.search_documents(query, limit=max_documents)
+
+        for r in results:
+            print(r)
+
 
 if __name__ == "__main__":
     app()
