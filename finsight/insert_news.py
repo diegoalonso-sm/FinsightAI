@@ -116,7 +116,7 @@ def create_schema_command(
         properties = [
             wvc.config.Property(name="title", data_type=wvc.config.DataType.TEXT),
             wvc.config.Property(name="full_article", data_type=wvc.config.DataType.TEXT),
-            wvc.config.Property(name="url", data_type=wvc.config.DataType.TEXT, skip_vectorization=True),
+            wvc.config.Property(name="url", data_type=wvc.config.DataType.TEXT),
             wvc.config.Property(name="date", data_type=wvc.config.DataType.TEXT),
         ]
 
