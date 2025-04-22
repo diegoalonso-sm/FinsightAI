@@ -14,41 +14,39 @@ class SanitizerStrategy(ABC):
 
 class DateFormatSanitizer(SanitizerStrategy):
 
-    """Sanitizer strategy to convert date strings like 'Sat, April 19, 2025 at 3:18 PM GMT-4' into a datetime object."""
+    """Sanitizer strategy to convert date strings like 'Sat, April 19, 2025 at 3:18 PM GMT-4' into a 'YYYY-MM-DD' string."""
 
-    def sanitize(self, value: str) -> datetime:
+    def sanitize(self, value: str) -> str:
 
         """
-        Sanitize the input value and return a datetime object.
+        Sanitize the input value and return a date string.
 
         :param value: The value to sanitize.
-        :return: A datetime object.
+        :return: A date string formatted as 'YYYY-MM-DD'.
 
         """
 
         value = re.sub(r"\sGMT[+-]?\d{1,4}", "", value)
         parsed_date = datetime.strptime(value.strip(), "%a, %B %d, %Y at %I:%M %p")
-
-        return parsed_date
+        return parsed_date.strftime("%Y-%m-%d")
 
 class ShortMonthDateSanitizer(SanitizerStrategy):
 
-    """Sanitizer strategy for date strings like 'Sun, Apr 20, 2025, 11:24 AM'."""
+    """Sanitizer strategy for date strings like 'Sun, Apr 20, 2025, 11:24 AM' into a 'YYYY-MM-DD' string."""
 
-    def sanitize(self, value: str) -> datetime:
+    def sanitize(self, value: str) -> str:
 
         """
-        Sanitize the input value and return a datetime object.
+        Sanitize the input value and return a date string.
 
         :param value: The value to sanitize.
-        :return: A datetime object.
+        :return: A date string formatted as 'YYYY-MM-DD'.
 
         """
 
         value = re.sub(r"\sGMT[+-]?\d{1,4}", "", value)
         parsed_date = datetime.strptime(value.strip(), "%a, %b %d, %Y, %I:%M %p")
-
-        return parsed_date
+        return parsed_date.strftime("%Y-%m-%d")
 
 
 class DatetimeSanitizer(SanitizerStrategy):
@@ -129,7 +127,6 @@ def usage_example():
     sanitized_datetime = sanitizer.sanitize(original_date)
 
     print("Datetime object:", sanitized_datetime)
-    print("Formatted:", sanitized_datetime.strftime("%Y-%m-%d %H:%M:%S%z"))
 
 
 if __name__ == "__main__":
