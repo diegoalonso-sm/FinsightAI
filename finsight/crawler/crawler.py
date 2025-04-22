@@ -357,6 +357,7 @@ async def usage_example() -> None:
     extractor = YahooFinanceNewsExtractor(
         duration_seconds=2,
         scroll_interval=1,
+        max_articles=5,
     )
 
     results = await extractor.run()
