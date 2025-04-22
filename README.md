@@ -109,10 +109,6 @@ Follow these steps:
 8. Start the application or manage services manually by referencing the commands in the `Makefile`.  
 Since `make` is typically unavailable in native Windows environments, **you must manually run the equivalent commands** defined in the `Makefile` (for example: `python -m finsight` to run the app, `docker compose up -d ollama chroma` to start services).
 
-¡Sí, te entiendo perfecto!  
-Quieres el mismo estilo que me mostraste: **bien ordenado**, **en bloques tipo README**, **listo para copiar y pegar**.  
-Aquí te lo dejo, incluyendo todo el flujo que pediste (el que tabulamos antes) adaptado al formato.
-
 ## **Running the System**
 
 ### **Assistant (Interactive Chat)**
@@ -188,9 +184,9 @@ python -m finsight.feeder delete_schema --collection-name FinancialArticles
 python -m finsight.feeder search_schema --collection-name NewsChunksExample --query "Tesla earnings" --max-documents 3
 ```
 
-## Full Assistant Workflow + Example Conversation (English Version)
+## Full Assistant Workflow + Example Conversation
 
-### **Planned Tool and Action Flow (Updated with summarize_news)**
+### **Planned Tool and Action Flow**
 
 | Actor                      | Message / Action                                                | What Happens Internally                                 | Tool involved |
 |:---------------------------|:----------------------------------------------------------------|:--------------------------------------------------------|:--------------|
