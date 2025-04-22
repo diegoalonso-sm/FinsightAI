@@ -39,7 +39,7 @@ def insert_chunks_into_weaviate(documents: List[Dict], collection_name: str = "N
             wvc.config.Property(name="title", data_type=wvc.config.DataType.TEXT),
             wvc.config.Property(name="full_article", data_type=wvc.config.DataType.TEXT),
             wvc.config.Property(name="url", data_type=wvc.config.DataType.TEXT, skip_vectorization=True),
-            wvc.config.Property(name="date", data_type=wvc.config.DataType.TEXT),
+            wvc.config.Property(name="date", data_type=wvc.config.DataType.DATE, skip_vectorization=True),
         ]
 
         schema_manager = SchemaManager(client)
