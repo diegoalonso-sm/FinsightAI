@@ -81,7 +81,8 @@ def insert_news_into_weaviate(documents: List[Dict], collection_name: str = "New
                 bm25_b=0.75,
                 bm25_k1=1.2
             ),
-        )
+            reranker_config=wvc.config.Configure.Reranker.transformers()
+            )
 
         inserter = Inserter(client, collection_name)
 
