@@ -282,7 +282,7 @@ class YahooFinanceNewsExtractor(NewsExtractor):
                 ])
 
                 try:
-                    new["date"] = str(sanitizer.sanitize(new["date"]))
+                    new["date"] = sanitizer.sanitize(new["date"])
 
                 except Exception as e:
                     print(f"Skipping news due to date error: {e}")
