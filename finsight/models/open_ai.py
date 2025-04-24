@@ -37,6 +37,7 @@ class OpenAIClient(LLMClient):
             model=self.model,
             instructions=system_prompt,
             input=user_prompt,
+            max_output_tokens=512,
         )
 
         return response.output_text.strip()
