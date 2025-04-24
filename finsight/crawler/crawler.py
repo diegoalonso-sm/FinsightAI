@@ -11,8 +11,10 @@ from finsight.crawler.core.content.base import StructuredExtractor
 from finsight.crawler.core.url.base import URLExtractorCrawler
 from finsight.crawler.core.url.deep_search import DeepSearchStrategy
 from finsight.crawler.core.url.scroll_search import ScrollSearchStrategy
-from finsight.crawler.sanitizer.datetime import DatetimeSanitizer, DateFormatSanitizer, ShortMonthDateSanitizer
+from finsight.crawler.sanitizer.datetime import ChainedDatetimeSanitizer, FullMonthDatetimeSanitizer, \
+    AbbreviatedMonthDatetimeSanitizer, LLMBasedDateSanitizer
 from finsight.crawler.sanitizer.urls import URLSanitizerChain, PrefixSanitizer, RemoveQueryParametersSanitizer, RemoveNoneSanitizer
+from finsight.models.open_ai import OpenAIClient
 
 
 class ExtractionMode(str, Enum):
@@ -269,9 +271,14 @@ class YahooFinanceNewsExtractor(NewsExtractor):
 
             for new in extracted_news:
 
-                sanitizer = DatetimeSanitizer([
-                    DateFormatSanitizer(),
-                    ShortMonthDateSanitizer(),
+                sanitizer = ChainedDatetimeSanitizer([
+                    FullMonthDatetimeSanitizer(),
+                    AbbreviatedMonthDatetimeSanitizer(),
+                    LLMBasedDateSanitizer(
+                        OpenAIClient(
+                            model="gpt-3.5-turbo"
+                        )
+                    ),
                 ])
 
                 try:
