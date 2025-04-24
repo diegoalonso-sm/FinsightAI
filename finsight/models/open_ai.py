@@ -5,7 +5,7 @@ class OpenAIClient(LLMClient):
 
     """A client for interacting with OpenAI's new Responses API."""
 
-    def __init__(self, api_key: str = None, model: str = "gpt-4.1"):
+    def __init__(self, api_key: str = None, model: str = 'gpt-3.5-turbo'):
 
         """
         Initialize the OpenAI client.
@@ -57,10 +57,14 @@ def usage_example():
 
     """
 
-    client = OpenAIClient(model="gpt-4o")
+    client = OpenAIClient(model="gpt-3.5-turbo")
 
-    system_prompt = "You are an assistant that returns dates in ISO format (YYYY-MM-DD) given natural language inputs. You must return the date in ISO format only, without any additional text or explanation."
-    user_prompt = "next Friday at 5pm"
+    system_prompt = (
+        "You are an assistant that returns dates in ISO format (YYYY-MM-DD) given natural language inputs."
+        "You must return the date in ISO format only, without any additional text or explanation."
+    )
+
+    user_prompt = "Sat, April 19, 2025 at 9:30 AM GMT-4"
 
     try:
         result = client.generate_response(system_prompt, user_prompt)
