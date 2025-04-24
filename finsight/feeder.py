@@ -207,7 +207,7 @@ def hard_delete_command(
 @app.command("search_schema")
 def search_schema_command(
     collection_name: str = typer.Option("Example", help="Weaviate collection name to search."),
-    query: str = typer.Option("Tesla", help="Search query."),
+    query: str = typer.Option("Technology", help="Search query string for documents."),
     max_documents: int = typer.Option(5, help="Maximum number of documents to retrieve."),
 ):
 
