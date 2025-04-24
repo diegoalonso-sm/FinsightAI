@@ -166,12 +166,6 @@ python -m finsight.feeder insert_news --duration-seconds 2 --scroll-interval 1 -
 python -m finsight.feeder show_news --collection-name NewsChunksExample --max-articles 5
 ```
 
-- **Create a new schema:**
-
-```bash
-python -m finsight.feeder create_schema --collection-name FinancialArticles
-```
-
 - **Delete an existing schema:**
 
 ```bash
