@@ -141,8 +141,6 @@ def insert_news_command(
     articles = extractor_func(duration_seconds, scroll_interval, max_articles)
     typer.echo(f"[INFO] Extracted {len(articles)} articles.")
 
-    print(articles[0])
-
     typer.echo("[INFO] Inserting into Weaviate...")
     insert_news_into_weaviate(articles, collection_name)
     typer.echo("[INFO] Insertion complete.")
