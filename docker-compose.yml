@@ -30,6 +30,9 @@ services:
       ENABLE_API_BASED_MODULES: 'true'
       CLUSTER_HOSTNAME: 'node1'
 
+  sum-transformers:
+    image: cr.weaviate.io/semitechnologies/sum-transformers:facebook-bart-large-cnn-1.2.0
+
 volumes:
   ollama_data:
   weaviate_data:
