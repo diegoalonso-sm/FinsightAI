@@ -4,6 +4,7 @@ import weaviate
 import weaviate.classes as wvc
 from weaviate.util import generate_uuid5
 
+from finsight.models.open_ai import OpenAIClient
 from finsight.retriever.client.connection import WeaviateClientFactory
 from finsight.retriever.client.interface import SchemaManager
 
@@ -31,13 +32,14 @@ class Inserter:
         self.client = client
         self.collection = self.client.collections.get(collection_name)
 
-    def insert_documents(self, documents: List[Dict], uuid_properties: List[str]) -> None:
+    def insert_documents(self, documents: List[Dict], uuid_properties: List[str], summarize=False) -> None:
 
         """
         Insert a list of documents into the collection with dynamic batching.
 
         :param documents: List of document dictionaries to insert.
         :param uuid_properties: List of property keys used to generate UUIDs.
+        :param summarize: If True, summarize the documents before insertion.
 
         """
 
@@ -51,6 +53,8 @@ class Inserter:
                 if self._object_exists(obj_uuid):
                     print(f"[SKIP] Object with UUID {obj_uuid} already exists.")
                     continue
+
+                document = self._summarize(document) if summarize else None
 
                 batch.add_object(
                     properties=document,
@@ -91,6 +95,32 @@ class Inserter:
 
         keys_for_uuid = {prop: document[prop] for prop in uuid_properties}
         return generate_uuid5(keys_for_uuid)
+
+    @staticmethod
+    def _summarize(document):
+
+        client = OpenAIClient(model="gpt-4o")
+        article = document.get("full_article", "")
+
+        system_prompt = (
+            "You are a financial analyst assistant. Your task is to analyze financial news articles and produce"
+            "concise, neutral summaries. Each summary must be a single paragraph, clearly explaining the key event,"
+            "its relevance to companies or industries involved, and any quantitative or strategic information that"
+            "could assist in basic financial analysis. Avoid opinions, speculation, or irrelevant details."
+            "Focus on clarity and usefulness for financial decision-making."
+        )
+
+        user_prompt = f"Summarize the following financial news article: {article}"
+
+        try:
+            result = client.generate_response(system_prompt, user_prompt)
+            document["summary"] = result
+            # print(f"Summary returned by model: {result}")
+
+        except Exception as e:
+            print(f"Error generating summary: {e}")
+
+        return document
 
 
 def usage_example():
