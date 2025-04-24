@@ -63,16 +63,57 @@ async def buscar_noticias(ctx: RunContext[ContextoFinanciero], tema: str) -> str
 async def ver_portafolio(ctx: RunContext[ContextoFinanciero]) -> str:
     return ctx.deps.portafolio.resumen()
 
+from collections import defaultdict
+import re
+
+SECTOR_KEYWORDS = {
+    "EquityTech Fund": ["tecnología", "software", "nube", "hardware"],
+    "GreenEnergy ETF": ["energía renovable", "solar", "eólica", "verde"],
+    "HealthBio Stocks": ["salud", "biotecnología", "farmacéutica"],
+    "Global Bonds Fund": ["bonos", "deuda", "gubernamental"],
+    "CryptoIndex": ["criptomonedas", "bitcoin", "ethereum", "cripto"],
+    "RealEstate REIT": ["inmobiliaria", "propiedades", "REIT"],
+    "Emerging Markets Fund": ["mercados emergentes", "economías en desarrollo"],
+    "AI & Robotics ETF": ["inteligencia artificial", "IA", "robótica"],
+    "Commodities Basket": ["materias primas", "oro", "commodities"],
+    "Cash Reserve": []  # No se redistribuye aquí
+}
+
 @agent.tool
 async def optimizar_portafolio(ctx: RunContext[ContextoFinanciero], motivo: str) -> str:
+
     noticias = ctx.deps.search(motivo)
     if not noticias:
         return "No se encontraron noticias relevantes para optimizar el portafolio."
-    if "tecnología" in motivo.lower():
-        ctx.deps.portafolio.activos["EquityTech Fund"] += 500
-        ctx.deps.portafolio.activos["Cash Reserve"] -= 500
-        return "Se transfirieron $500 desde Cash Reserve a EquityTech Fund basado en noticias tecnológicas recientes."
-    return "No se realizaron cambios. No se identificaron sectores con impacto relevante."
+
+    sentimiento_por_sector = defaultdict(float)
+
+    for noticia in noticias:
+        texto = f"{noticia.get('title', '')} {noticia.get('summary', '')}".lower()
+
+        for sector, keywords in SECTOR_KEYWORDS.items():
+            if any(re.search(rf"\b{kw}\b", texto) for kw in keywords):
+                sentimiento_por_sector[sector] += 1.0
+
+    total_puntaje = sum(sentimiento_por_sector.values())
+
+    if total_puntaje == 0:
+        return "Las noticias no parecen tener impacto relevante en sectores del portafolio. No se realizaron cambios."
+
+    nuevo_portafolio = {}
+    for sector in ctx.deps.portafolio.activos:
+        peso = sentimiento_por_sector.get(sector, 0.1)
+        nuevo_portafolio[sector] = round((peso / (total_puntaje + 0.1 * (10 - len(sentimiento_por_sector)))) * 10000, 2)
+
+    diferencia = 10000 - sum(nuevo_portafolio.values())
+    sector_ajustado = max(nuevo_portafolio, key=nuevo_portafolio.get)
+    nuevo_portafolio[sector_ajustado] += diferencia
+
+    ctx.deps.portafolio.activos = nuevo_portafolio
+
+    resumen = "\n".join(f"{sector}: ${monto:,.2f}" for sector, monto in nuevo_portafolio.items())
+    return f"Portafolio optimizado basado en análisis de noticias.\n\nNueva distribución:\n{resumen}"
+
 
 @agent.tool
 async def generar_reporte(ctx: RunContext[ContextoFinanciero]) -> str:
@@ -87,7 +128,10 @@ async def stream_from_agent(prompt: str, chatbot: list[dict], past_messages: lis
     yield gr.Textbox(interactive=False, value=''), chatbot, gr.skip()
 
     with WeaviateClientFactory.connect_to_local() as client:
-        deps = ContextoFinanciero(searcher=Searcher(client, "News"), portafolio=Portafolio())
+        deps = ContextoFinanciero(
+            searcher=Searcher(client, "News"),
+            portafolio=Portafolio()
+        )
 
         async with agent.run_stream(prompt, deps=deps, message_history=past_messages) as result:
             for message in result.new_messages():
@@ -98,7 +142,8 @@ async def stream_from_agent(prompt: str, chatbot: list[dict], past_messages: lis
                 chatbot[-1]['content'] = msg
                 yield gr.skip(), chatbot, gr.skip()
 
-            past_messages = result.all_messages()
+            # 👇 Actualiza el historial
+            past_messages[:] = result.all_messages()  # Modifica en el lugar
             yield gr.Textbox(interactive=True), gr.skip(), past_messages
 
 async def handle_retry(chatbot, past_messages: list, retry_data: gr.RetryData):
