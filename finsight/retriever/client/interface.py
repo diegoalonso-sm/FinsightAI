@@ -29,7 +29,7 @@ class SchemaManager:
 
         self.client = client
 
-    def create_collection(self, name: str, properties: List[wvc.config.Property]) -> None:
+    def create_collection(self, name: str, properties: List[wvc.config.Property], vectorizer_config=None, generative_config=None, inverted_index_config=None) -> None:
 
         """
         Create a new collection with OpenAI vectorizer and optional generative config.
@@ -37,8 +37,10 @@ class SchemaManager:
         :param name: The name of the collection to create.
         :type name: str
 
+        :param vectorizer_config: Vectorizer configuration for generating embeddings.
+        :param generative_config: Generative module configuration for RAG (Retrieval Augmented Generation).
+        :param inverted_index_config: Inverted index configuration for keyword searches.
         :param properties: A list of Property objects defining the collection schema.
-        :type properties: List[wvc.config.Property]
 
         """
 
@@ -48,8 +50,9 @@ class SchemaManager:
 
         self.client.collections.create(
             name=name,
-            vectorizer_config=wvc.config.Configure.Vectorizer.text2vec_openai(),
-            generative_config=wvc.config.Configure.Generative.openai(),
+            vectorizer_config=vectorizer_config,
+            generative_config=generative_config,
+            inverted_index_config=inverted_index_config,
             properties=properties,
         )
 
