@@ -1,7 +1,6 @@
 from openai import OpenAI
 from finsight.models.client import LLMClient
 
-
 class OpenAIClient(LLMClient):
 
     """A client for interacting with OpenAI's new Responses API."""
@@ -15,6 +14,10 @@ class OpenAIClient(LLMClient):
         :param model: OpenAI model identifier (e.g., 'gpt-4o', 'gpt-3.5-turbo').
 
         """
+
+        from dotenv import load_dotenv
+
+        load_dotenv()
 
         self.model = model
         self.client = OpenAI(api_key=api_key)
@@ -53,10 +56,6 @@ def usage_example():
     - Prints the ISO date returned by the model.
 
     """
-
-    from dotenv import load_dotenv
-
-    load_dotenv()
 
     client = OpenAIClient(model="gpt-4o")
 
